@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # Gmail Configuration - MUST match exactly
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
+app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = 'nishalreddyreddypally724@gmail.com'
@@ -113,4 +113,5 @@ if __name__ == '__main__':
     print(f"📡 Server: http://127.0.0.1:5000")
     print("="*70 + "\n")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
