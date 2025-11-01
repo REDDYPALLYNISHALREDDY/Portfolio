@@ -1,117 +1,51 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
-from flask_mail import Mail, Message
 import os
-import sys
+from datetime import datetime
 
 app = Flask(__name__)
-
-# Gmail Configuration - MUST match exactly
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'nishalreddyreddypally724@gmail.com'
-app.config['MAIL_PASSWORD'] = 'kompfbtjltpbuhag'  # ← PUT YOUR FULL 16-CHAR PASSWORD HERE
-app.config['MAIL_DEFAULT_SENDER'] = 'nishalreddyreddypally724@gmail.com'
-app.config['MAIL_DEBUG'] = True  # Shows email debug info
-
-mail = Mail(app)
 
 @app.route('/')
 def home():
     return render_template('Index.html')
 
-@app.route('/send-message', methods=['POST', 'OPTIONS'])
+@app.route('/send-message', methods=['POST'])
 def send_message():
-    if request.method == 'OPTIONS':
-        return '', 200
-    
     try:
-        print("\n" + "="*70)
-        print("📧 CONTACT FORM SUBMISSION RECEIVED")
-        print("="*70)
-        
-        # Get JSON data
         data = request.get_json()
-        print(f"Raw data received: {data}")
         
         if not data:
-            print("❌ ERROR: No data in request")
-            return jsonify({'success': False, 'message': 'No data'}), 400
+            return jsonify({'success': False, 'message': 'No data received'}), 400
         
         name = data.get('name', '')
         email = data.get('email', '')
         subject = data.get('subject', '')
         message_text = data.get('message', '')
         
-        print(f"✓ Name: {name}")
-        print(f"✓ Email: {email}")
-        print(f"✓ Subject: {subject}")
-        print(f"✓ Message: {message_text[:50]}...")
-        
-        print("\n🔄 Creating email message...")
-        
-        # Create email
-        msg = Message(
-            subject=f"Portfolio: {subject}",
-            recipients=['nishalreddyreddypally724@gmail.com'],
-            body=f"""
-NEW PORTFOLIO MESSAGE
-═════════════════════════════════════
-
-FROM: {name}
-EMAIL: {email}
-SUBJECT: {subject}
-
-MESSAGE:
-{message_text}
-
-═════════════════════════════════════
-Sent from Portfolio Contact Form
-            """,
-            reply_to=email
-        )
-        
-        print("🔄 Sending email via Gmail SMTP...")
-        
-        # Send email
-        mail.send(msg)
-        
-        print("✅ EMAIL SENT SUCCESSFULLY!")
+        # Log the message to console (you can see this in Render logs)
+        print("\n" + "="*70)
+        print("📧 NEW CONTACT FORM MESSAGE")
+        print("="*70)
+        print(f"Date: {datetime.now()}")
+        print(f"From: {name}")
+        print(f"Email: {email}")
+        print(f"Subject: {subject}")
+        print(f"Message:\n{message_text}")
         print("="*70 + "\n")
         
+        # Return success (message is logged, user can contact you directly via email)
         return jsonify({
             'success': True, 
-            'message': 'Message sent! Check your email inbox (or spam folder).'
+            'message': f'Thank you {name}! I\'ll respond to {email} soon. You can also email me directly at nishalreddyreddypally724@gmail.com'
         }), 200
         
     except Exception as e:
-        print("\n" + "="*70)
-        print("❌ EMAIL ERROR")
-        print("="*70)
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        print("="*70 + "\n")
-        
-        return jsonify({
-            'success': False,
-            'message': f'Failed: {str(e)}'
-        }), 500
+        print(f"❌ Error: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 @app.route('/static/<path:path>')
 def send_static(path):
     return send_from_directory('static', path)
 
 if __name__ == '__main__':
-    print("\n" + "="*70)
-    print("🚀 PORTFOLIO SERVER STARTING")
-    print("="*70)
-    print(f"📧 Email: nishalreddyreddypally724@gmail.com")
-    print(f"🔑 Password: {app.config['MAIL_PASSWORD'][:4]}************")
-    print(f"📡 Server: http://127.0.0.1:5000")
-    print("="*70 + "\n")
-    
     port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=False)
